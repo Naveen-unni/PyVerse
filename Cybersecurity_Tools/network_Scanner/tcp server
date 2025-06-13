@@ -1,0 +1,47 @@
+import socket
+import sys
+
+# Creating a socket object using IPv4 and TCP
+myket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Allow reusing the address (avoids "address already in use" error)
+myket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+print("Socket has been successfully created.")
+
+# Listen on all network interfaces
+HOST = ""  # or '0.0.0.0'
+
+# Define a port number
+PORT = 8080
+
+# Try to bind the socket to the host and port
+try:
+    myket.bind((HOST, PORT))
+except socket.error as msg:
+    print('Binding has failed. Error Code: ' + str(msg.errno) + ' Message: ' + str(msg.strerror))
+    sys.exit()
+
+print("Socket is bound to port", PORT)
+
+# Put the socket into listening mode
+myket.listen(5)
+print("Socket is now listening for incoming connections...")
+
+# Accept a connection
+c, addr = myket.accept()  # c is the client socket, addr is client (IP, port)
+print("Connection established from address:", addr[0])
+
+# Receive up to 512 bytes of data
+data = c.recv(512)
+
+# If data is received, store it in a file
+if data:
+    with open("store.dat", "w+") as file:
+        file.write(addr[0])  # Client IP
+        file.write(" : ")
+        file.write(data.decode("utf-8"))  # Convert bytes to string
+
+# Close the client and server socket
+c.close()
+myket.close()
